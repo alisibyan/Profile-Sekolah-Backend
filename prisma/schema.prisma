@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  idUser   String   @id @default(uuid())
+  username String   @unique
+  password String
+  Berita   Berita[]
+}
+
+model Jurusan {
+  idJurusan   String  @id @default(uuid())
+  kodeJurusan String  @unique
+  namaJurusan String
+  Siswa       Siswa[]
+}
+
+model Guru {
+  idGuru  String @id @default(uuid())
+  nama    String
+  jabatan String
+}
+
+model Siswa {
+  idSiswa          String  @id @default(uuid())
+  nisn             String  @unique
+  nama             String
+  jurusan          Jurusan @relation(fields: [jurusanIdJurusan], references: [idJurusan])
+  jurusanIdJurusan String
+}
+
+model Berita {
+  idBerita   String   @id @default(uuid())
+  title      String
+  image      String
+  artikel    String
+  tanggal    DateTime @default(now())
+  author     User     @relation(fields: [userIdUser], references: [idUser])
+  userIdUser String
+}
