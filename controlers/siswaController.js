@@ -3,7 +3,20 @@ const prisma = new PrismaClient();
 
 const getAllSiswa = (req, res, next) => {
   prisma.siswa
-    .findMany()
+    .findMany({
+      include: {
+        kelas: {
+          select: {
+            kelas: true,
+          },
+        },
+        jurusan: {
+          select: {
+            kodeJurusan: true,
+          },
+        },
+      },
+    })
     .then((data) => {
       res.status(200).json(data);
     })
@@ -15,7 +28,21 @@ const getAllSiswa = (req, res, next) => {
 const getSiswaById = (req, res, next) => {
   const { id } = req.params;
   prisma.siswa
-    .findUnique({ where: { idSiswa: id } })
+    .findUnique({
+      where: { idSiswa: id },
+      include: {
+        kelas: {
+          select: {
+            kelas: true,
+          },
+        },
+        jurusan: {
+          select: {
+            kodeJurusan: true,
+          },
+        },
+      },
+    })
     .then((data) => {
       res.status(200).json(data);
     })
@@ -25,9 +52,16 @@ const getSiswaById = (req, res, next) => {
 };
 
 const createSiswa = (req, res, next) => {
-  const { nama, nisn, jurusan } = req.body;
+  const { nama, nisn, idJurusan, idKelas } = req.body;
   prisma.siswa
-    .create({ data: { nisn, nama, jurusan } })
+    .create({
+      data: {
+        nisn: nisn,
+        nama: nama,
+        kelasIdKelas: idKelas,
+        jurusanIdJurusan: idJurusan,
+      },
+    })
     .then(() => {
       res.status(201).json({ message: "create success" });
     })

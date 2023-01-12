@@ -17,7 +17,7 @@ const getJurusanById = (req, res, next) => {
   prisma.jurusan
     .findUnique({
       where: {
-        id: id,
+        idJurusan: id,
       },
     })
     .then((data) => {

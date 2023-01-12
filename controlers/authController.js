@@ -14,7 +14,12 @@ const login = async (req, res) => {
 
     const accessToken = generateAccessToken({ username });
 
-    res.status(200).json({ accessToken });
+    res
+      .status(200)
+      .json({
+        accessToken,
+        user: { idUser: getUser.idUser, username: getUser.username },
+      });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }

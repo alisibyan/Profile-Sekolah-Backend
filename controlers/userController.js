@@ -4,7 +4,12 @@ const prisma = new PrismaClient();
 
 const getAllUser = (req, res, next) => {
   prisma.user
-    .findMany()
+    .findMany({
+      select: {
+        idUser: true,
+        username: true,
+      },
+    })
     .then((users) => {
       res.status(200).json(users);
     })
@@ -18,6 +23,7 @@ const getUserById = (req, res, next) => {
 
   prisma.user
     .findUnique({
+      select: { username: true, idUser: true },
       where: {
         idUser: id,
       },
@@ -31,7 +37,11 @@ const getUserById = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { username, password } = req.body;
+  const { username, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(500).json({ message: "Password not match" });
+  }
 
   argon
     .hash(password)
@@ -57,14 +67,26 @@ const createUser = (req, res, next) => {
 
 const updateUser = (req, res, next) => {
   const { id } = req.params;
-  const { username, password } = req.body;
-  prisma.user
-    .update({
-      where: { idUser: id },
-      data: { username: username, password: password },
-    })
-    .then(() => {
-      res.status(200).json({ message: "update succcess" });
+  const { username, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(500).json({ message: "Password not match" });
+  }
+
+  argon
+    .hash(password)
+    .then((hashed) => {
+      prisma.user
+        .update({
+          where: { idUser: id },
+          data: { username: username, password: hashed },
+        })
+        .then(() => {
+          res.status(200).json({ message: "update succcess" });
+        })
+        .catch((error) => {
+          next(error);
+        });
     })
     .catch((error) => {
       next(error);

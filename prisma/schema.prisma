@@ -25,6 +25,7 @@ model Guru {
   idGuru  String @id @default(uuid())
   nama    String
   jabatan String
+  Kelas   Kelas?
 }
 
 model Siswa {
@@ -32,7 +33,9 @@ model Siswa {
   nisn             String  @unique
   nama             String
   jurusan          Jurusan @relation(fields: [jurusanIdJurusan], references: [idJurusan])
+  kelas            Kelas   @relation(fields: [kelasIdKelas], references: [idKelas])
   jurusanIdJurusan String
+  kelasIdKelas     String
 }
 
 model Berita {
@@ -43,4 +46,19 @@ model Berita {
   tanggal    DateTime @default(now())
   author     User     @relation(fields: [userIdUser], references: [idUser])
   userIdUser String
+}
+
+model Kelas {
+  idKelas    String  @id @default(uuid())
+  kelas      String
+  waliKelas  Guru    @relation(fields: [guruIdGuru], references: [idGuru])
+  guruIdGuru String  @unique
+  Siswa      Siswa[]
+}
+
+model Image {
+  idImage     String @id @unique @default(uuid())
+  fileName    String @unique
+  contentType String
+  path        String
 }

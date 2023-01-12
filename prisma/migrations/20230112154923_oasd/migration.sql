@@ -4,7 +4,6 @@ CREATE TABLE `User` (
     `username` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `User_idUser_key`(`idUser`),
     UNIQUE INDEX `User_username_key`(`username`),
     PRIMARY KEY (`idUser`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -15,7 +14,6 @@ CREATE TABLE `Jurusan` (
     `kodeJurusan` VARCHAR(191) NOT NULL,
     `namaJurusan` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `Jurusan_idJurusan_key`(`idJurusan`),
     UNIQUE INDEX `Jurusan_kodeJurusan_key`(`kodeJurusan`),
     PRIMARY KEY (`idJurusan`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -26,7 +24,6 @@ CREATE TABLE `Guru` (
     `nama` VARCHAR(191) NOT NULL,
     `jabatan` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `Guru_idGuru_key`(`idGuru`),
     PRIMARY KEY (`idGuru`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -36,6 +33,7 @@ CREATE TABLE `Siswa` (
     `nisn` VARCHAR(191) NOT NULL,
     `nama` VARCHAR(191) NOT NULL,
     `jurusanIdJurusan` VARCHAR(191) NOT NULL,
+    `kelasIdKelas` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `Siswa_nisn_key`(`nisn`),
     PRIMARY KEY (`idSiswa`)
@@ -53,8 +51,24 @@ CREATE TABLE `Berita` (
     PRIMARY KEY (`idBerita`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `Kelas` (
+    `idKelas` VARCHAR(191) NOT NULL,
+    `kelas` VARCHAR(191) NOT NULL,
+    `guruIdGuru` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `Kelas_guruIdGuru_key`(`guruIdGuru`),
+    PRIMARY KEY (`idKelas`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Siswa` ADD CONSTRAINT `Siswa_jurusanIdJurusan_fkey` FOREIGN KEY (`jurusanIdJurusan`) REFERENCES `Jurusan`(`idJurusan`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Siswa` ADD CONSTRAINT `Siswa_kelasIdKelas_fkey` FOREIGN KEY (`kelasIdKelas`) REFERENCES `Kelas`(`idKelas`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Berita` ADD CONSTRAINT `Berita_userIdUser_fkey` FOREIGN KEY (`userIdUser`) REFERENCES `User`(`idUser`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Kelas` ADD CONSTRAINT `Kelas_guruIdGuru_fkey` FOREIGN KEY (`guruIdGuru`) REFERENCES `Guru`(`idGuru`) ON DELETE RESTRICT ON UPDATE CASCADE;

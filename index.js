@@ -8,6 +8,8 @@ const authRouter = require("./routes/authRouter");
 const beritaRouter = require("./routes/beritaRouter");
 const guruRouter = require("./routes/guruRouter");
 const siswaRouter = require("./routes/siswaRouter");
+const kelasRouter = require("./routes/kelasRouter");
+const mediaRouter = require("./routes/mediaRoutes");
 
 const app = express();
 app.use(cors());
@@ -19,6 +21,8 @@ app.use(authRouter);
 app.use(beritaRouter);
 app.use(guruRouter);
 app.use(siswaRouter);
+app.use(kelasRouter);
+app.use(mediaRouter);
 
 app.use(returnError);
 app.listen(5000, () => {
