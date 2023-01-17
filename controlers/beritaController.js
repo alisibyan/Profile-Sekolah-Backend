@@ -48,61 +48,70 @@ const getBeritaById = (req, res, next) => {
       include: { author: { select: { username: true } } },
     })
     .then((data) => {
-      res.status(200).json(data);
+      res.status(200).json({ ...data, artikel: data.artikel.toString("utf8") });
     })
     .catch((error) => {
       next(error);
     });
 };
 
-const createBerita = (req, res, next) => {
+const createBerita = async (req, res, next) => {
   const { title, image, artikel, author } = req.body;
-  imageHelper
-    .upload(image)
-    .then(({ fileName }) => {
-      prisma.berita
-        .create({
-          data: { title, image: fileName, artikel, userIdUser: author },
-        })
-        .then(() => {
-          res.status(201).json({ message: "create success" });
-        })
-        .catch((error) => {
-          next(error);
-        });
-    })
-    .catch((error) => {
-      next(error);
+
+  try {
+    const uploadFile = await imageHelper.upload(image);
+
+    await prisma.berita.create({
+      data: {
+        title,
+        image: uploadFile.fileName,
+        artikel: Buffer.from(artikel, "utf-8"),
+        userIdUser: author,
+      },
     });
+
+    res.status(201).json({ message: "create success" });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const updateBerita = (req, res, next) => {
+const updateBerita = async (req, res, next) => {
   const { id } = req.params;
-  const { title, image, artikel, author } = req.body;
-  imageHelper
-    .upload(image)
-    .then(({ fileName }) => {
-      prisma.berita
-        .update({
-          where: { idBerita: id },
-          data: { title, image: fileName, artikel, userIdUser: author },
-        })
-        .then(() => {
-          res.status(201).json({ message: "create success" });
-        })
-        .catch((error) => {
-          next(error);
-        });
-    })
-    .catch((error) => {
-      next(error);
-    });
+  const { title, image, artikel, userIdUser, dataUri } = req.body;
+
+  try {
+    if (dataUri) {
+      const replaceImage = await imageHelper.replace(dataUri, image);
+      await prisma.berita.update({
+        where: { idBerita: id },
+        data: {
+          artikel: Buffer.from(artikel, "utf-8"),
+          title: title,
+          userIdUser: userIdUser,
+          image: replaceImage.fileName,
+        },
+      });
+    } else {
+      await prisma.berita.update({
+        where: { idBerita: id },
+        data: {
+          artikel: Buffer.from(artikel, "utf-8"),
+          title: title,
+          userIdUser: userIdUser,
+        },
+      });
+    }
+    res.status(200).json({ message: "update success" });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const deleteBerita = (req, res, next) => {
   const { id } = req.params;
   prisma.berita
-    .findUnique({ where: { idBerita: id }, select: { image } })
+    .findUnique({ where: { idBerita: id }, select: { image: true } })
     .then(({ image }) => {
       imageHelper
         .remove(image)

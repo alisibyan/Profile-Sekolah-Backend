@@ -42,7 +42,7 @@ model Berita {
   idBerita   String   @id @default(uuid())
   title      String
   image      String
-  artikel    String
+  artikel    Bytes
   tanggal    DateTime @default(now())
   author     User     @relation(fields: [userIdUser], references: [idUser])
   userIdUser String
