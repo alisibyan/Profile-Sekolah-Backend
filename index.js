@@ -10,6 +10,8 @@ const guruRouter = require("./routes/guruRouter");
 const siswaRouter = require("./routes/siswaRouter");
 const kelasRouter = require("./routes/kelasRouter");
 const mediaRouter = require("./routes/mediaRoutes");
+const pelajaranRouter = require("./routes/pelajaranRoutes");
+const nilaiRouter = require("./routes/nilaiRoutes");
 
 const app = express();
 app.use(cors());
@@ -23,6 +25,8 @@ app.use(guruRouter);
 app.use(siswaRouter);
 app.use(kelasRouter);
 app.use(mediaRouter);
+app.use(pelajaranRouter);
+app.use(nilaiRouter);
 
 app.use(returnError);
 app.listen(5000, () => {

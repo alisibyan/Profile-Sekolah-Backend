@@ -1,64 +1,73 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  idUser   String   @id @default(uuid())
-  username String   @unique
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  username String
   password String
-  Berita   Berita[]
-}
-
-model Jurusan {
-  idJurusan   String  @id @default(uuid())
-  kodeJurusan String  @unique
-  namaJurusan String
-  Siswa       Siswa[]
+  siswa    Siswa?  @relation(fields: [siswaId], references: [id])
+  role     Role
+  siswaId  String? @db.ObjectId
 }
 
 model Guru {
-  idGuru  String @id @default(uuid())
-  nama    String
-  jabatan String
-  Kelas   Kelas?
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  nama      String
+  Kelas     Kelas[]
+  Pelajaran Pelajaran[]
 }
 
 model Siswa {
-  idSiswa          String  @id @default(uuid())
-  nisn             String  @unique
-  nama             String
-  jurusan          Jurusan @relation(fields: [jurusanIdJurusan], references: [idJurusan])
-  kelas            Kelas   @relation(fields: [kelasIdKelas], references: [idKelas])
-  jurusanIdJurusan String
-  kelasIdKelas     String
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  nisn    String  @unique
+  nama    String
+  kelas   Kelas   @relation(fields: [kelasId], references: [id])
+  Nilai   Nilai[]
+  kelasId String  @db.ObjectId
+  User    User[]
+}
+
+enum Role {
+  ADMIN
+  USER
 }
 
 model Berita {
-  idBerita   String   @id @default(uuid())
-  title      String
-  image      String
-  artikel    Bytes
-  tanggal    DateTime @default(now())
-  author     User     @relation(fields: [userIdUser], references: [idUser])
-  userIdUser String
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  title   String
+  image   String
+  artikel Bytes
+  tanggal DateTime @default(now())
 }
 
 model Kelas {
-  idKelas    String  @id @default(uuid())
-  kelas      String
-  waliKelas  Guru    @relation(fields: [guruIdGuru], references: [idGuru])
-  guruIdGuru String  @unique
-  Siswa      Siswa[]
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  kelas     String
+  waliKelas Guru    @relation(fields: [guruId], references: [id])
+  guruId    String  @db.ObjectId
+  Siswa     Siswa[]
 }
 
-model Image {
-  idImage     String @id @unique @default(uuid())
-  fileName    String @unique
-  contentType String
-  path        String
+model Nilai {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  nilai       Int
+  siswa       Siswa     @relation(fields: [siswaId], references: [id])
+  siswaId     String    @db.ObjectId
+  pelajaran   Pelajaran @relation(fields: [pelajaranId], references: [id])
+  pelajaranId String    @db.ObjectId
+}
+
+model Pelajaran {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  nama   String
+  guru   Guru    @relation(fields: [guruId], references: [id])
+  guruId String  @db.ObjectId
+  Nilai  Nilai[]
 }

@@ -6,8 +6,10 @@ const getAllUser = (req, res, next) => {
   prisma.user
     .findMany({
       select: {
-        idUser: true,
+        id: true,
+        role: true,
         username: true,
+        siswa: true,
       },
     })
     .then((users) => {
@@ -23,7 +25,12 @@ const getUserById = (req, res, next) => {
 
   prisma.user
     .findUnique({
-      select: { username: true, idUser: true },
+      select: {
+        id: true,
+        role: true,
+        username: true,
+        siswa: true,
+      },
       where: {
         idUser: id,
       },
@@ -37,7 +44,7 @@ const getUserById = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { username, password, confirmPassword } = req.body;
+  const { username, password, confirmPassword, role, siswa } = req.body;
 
   if (password !== confirmPassword) {
     return res.status(500).json({ message: "Password not match" });
@@ -51,6 +58,8 @@ const createUser = (req, res, next) => {
           data: {
             username: username,
             password: hashed,
+            role,
+            siswa: { connect: { id: siswa } },
           },
         })
         .then(() => {
@@ -78,7 +87,7 @@ const updateUser = (req, res, next) => {
     .then((hashed) => {
       prisma.user
         .update({
-          where: { idUser: id },
+          where: { id },
           data: { username: username, password: hashed },
         })
         .then(() => {
@@ -96,7 +105,7 @@ const updateUser = (req, res, next) => {
 const deleteUser = (req, res, next) => {
   const { id } = req.params;
   prisma.user
-    .delete({ where: { idUser: id } })
+    .delete({ where: { id } })
     .then(() => {
       res.status(200).json({ message: "delete success" });
     })

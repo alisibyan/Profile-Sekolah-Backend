@@ -4,17 +4,11 @@ const prisma = new PrismaClient();
 const getAllSiswa = (req, res, next) => {
   prisma.siswa
     .findMany({
-      include: {
-        kelas: {
-          select: {
-            kelas: true,
-          },
-        },
-        jurusan: {
-          select: {
-            kodeJurusan: true,
-          },
-        },
+      select: {
+        id: true,
+        nama: true,
+        nisn: true,
+        kelas: { select: { kelas: true } },
       },
     })
     .then((data) => {
@@ -29,18 +23,12 @@ const getSiswaById = (req, res, next) => {
   const { id } = req.params;
   prisma.siswa
     .findUnique({
-      where: { idSiswa: id },
-      include: {
-        kelas: {
-          select: {
-            kelas: true,
-          },
-        },
-        jurusan: {
-          select: {
-            kodeJurusan: true,
-          },
-        },
+      where: { id },
+      select: {
+        id: true,
+        nama: true,
+        nisn: true,
+        kelas: { select: { kelas: true } },
       },
     })
     .then((data) => {
@@ -51,15 +39,35 @@ const getSiswaById = (req, res, next) => {
     });
 };
 
+const getSiswaByKelas = (req, res, next) => {
+  const { id } = req.params;
+  prisma.siswa
+    .findMany({
+      where: { kelasId: id },
+      select: {
+        id: true,
+        nama: true,
+        nisn: true,
+        kelas: { select: { kelas: true } },
+      },
+    })
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((error) => {
+      console.log(error);
+      next(error);
+    });
+};
+
 const createSiswa = (req, res, next) => {
-  const { nama, nisn, idJurusan, idKelas } = req.body;
+  const { nama, nisn, kelasId } = req.body;
   prisma.siswa
     .create({
       data: {
-        nisn: nisn,
-        nama: nama,
-        kelasIdKelas: idKelas,
-        jurusanIdJurusan: idJurusan,
+        nama,
+        nisn,
+        kelasId,
       },
     })
     .then(() => {
@@ -72,13 +80,14 @@ const createSiswa = (req, res, next) => {
 
 const updateSiswa = (req, res, next) => {
   const { id } = req.params;
-  const { nisn, nama, jurusan } = req.body;
+  const { nama, nisn, kelasId } = req.body;
   prisma.siswa
-    .update({ where: { idSiswa: id }, data: { nisn, nama, jurusan } })
+    .update({ where: { id }, data: { nama, nisn, kelasId } })
     .then(() => {
-      res.status(201).json({ message: "update success" });
+      res.status(200).json({ message: "update success" });
     })
     .catch((error) => {
+      console.log(error);
       next(error);
     });
 };
@@ -86,9 +95,9 @@ const updateSiswa = (req, res, next) => {
 const deleteSiswa = (req, res, next) => {
   const { id } = req.params;
   prisma.siswa
-    .delete({ where: { idSiswa: id } })
+    .delete({ where: { id } })
     .then(() => {
-      res.status(201).json({ message: "delete success" });
+      res.status(200).json({ message: "delete success" });
     })
     .catch((error) => {
       next(error);
@@ -101,4 +110,5 @@ module.exports = {
   createSiswa,
   deleteSiswa,
   updateSiswa,
+  getSiswaByKelas,
 };

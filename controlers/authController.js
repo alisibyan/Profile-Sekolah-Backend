@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const login = async (req, res) => {
   const { username, password } = req.body;
   try {
-    const getUser = await prisma.user.findUnique({ where: { username } });
+    const getUser = await prisma.user.findFirst({ where: { username } });
     if (!getUser) return res.status(404).json({ message: "user not found" });
 
     const match = await argon2.verify(getUser.password, password);
@@ -14,12 +14,14 @@ const login = async (req, res) => {
 
     const accessToken = generateAccessToken({ username });
 
-    res
-      .status(200)
-      .json({
-        accessToken,
-        user: { idUser: getUser.idUser, username: getUser.username },
-      });
+    res.status(200).json({
+      accessToken,
+      user: {
+        id: getUser.id,
+        username: getUser.username,
+        role: getUser.role,
+      },
+    });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }

@@ -25,9 +25,10 @@ const getGuruById = (req, res, next) => {
 };
 
 const createGuru = (req, res, next) => {
-  const { nama, jabatan } = req.body;
+  const { nama } = req.body;
+
   prisma.guru
-    .create({ data: { nama, jabatan } })
+    .create({ data: { nama: nama } })
     .then(() => {
       res.status(201).json({ message: "create success" });
     })
@@ -40,9 +41,9 @@ const updateGuru = (req, res, next) => {
   const { id } = req.params;
   const { nama, jabatan } = req.body;
   prisma.guru
-    .update({ where: { idGuru: id }, data: { nama, jabatan } })
+    .update({ where: { id }, data: { nama, jabatan } })
     .then(() => {
-      res.status(201).json({ message: "update success" });
+      res.status(200).json({ message: "update success" });
     })
     .catch((error) => {
       next(error);
@@ -52,9 +53,9 @@ const updateGuru = (req, res, next) => {
 const deleteGuru = (req, res, next) => {
   const { id } = req.params;
   prisma.guru
-    .delete({ where: { idGuru: id } })
+    .delete({ where: { id } })
     .then(() => {
-      res.status(201).json({ message: "delete success" });
+      res.status(200).json({ message: "delete success" });
     })
     .catch((error) => {
       next(error);

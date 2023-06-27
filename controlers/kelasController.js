@@ -4,13 +4,10 @@ const prisma = new PrismaClient();
 const getAllKelas = (req, res, next) => {
   prisma.kelas
     .findMany({
-      include: {
-        waliKelas: {
-          select: {
-            nama: true,
-            idGuru: true,
-          },
-        },
+      select: {
+        id: true,
+        kelas: true,
+        waliKelas: { select: { nama: true, id: true } },
       },
     })
     .then((data) => {
@@ -28,13 +25,10 @@ const getKelasById = (req, res, next) => {
       where: {
         idKelas: id,
       },
-      include: {
-        waliKelas: {
-          select: {
-            nama: true,
-            idGuru: true,
-          },
-        },
+      select: {
+        id: true,
+        kelas: true,
+        waliKelas: { select: { nama: true, id: true } },
       },
     })
     .then((data) => {
@@ -51,8 +45,8 @@ const createKelas = (req, res, next) => {
   prisma.kelas
     .create({
       data: {
-        kelas: kelas,
-        guruIdGuru: waliKelas,
+        kelas,
+        guruId: waliKelas,
       },
     })
     .then(() => {
@@ -68,8 +62,8 @@ const updateKelas = (req, res, next) => {
   const { kelas, waliKelas } = req.body;
   prisma.kelas
     .update({
-      where: { idKelas: id },
-      data: { kelas: kelas, guruIdGuru: waliKelas },
+      where: { id },
+      data: { kelas: kelas, guruId: waliKelas },
     })
     .then(() => {
       res.status(200).json({ message: "update success" });
@@ -82,7 +76,7 @@ const updateKelas = (req, res, next) => {
 const deleteKelas = (req, res, next) => {
   const { id } = req.params;
   prisma.kelas
-    .delete({ where: { idKelas: id } })
+    .delete({ where: { id } })
     .then(() => {
       res.status(200).json({ message: "delete success" });
     })
