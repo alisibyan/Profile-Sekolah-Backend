@@ -12,6 +12,7 @@ const kelasRouter = require("./routes/kelasRouter");
 const mediaRouter = require("./routes/mediaRoutes");
 const pelajaranRouter = require("./routes/pelajaranRoutes");
 const nilaiRouter = require("./routes/nilaiRoutes");
+const jadwalRouter = require("./routes/jadwalRouter");
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use(kelasRouter);
 app.use(mediaRouter);
 app.use(pelajaranRouter);
 app.use(nilaiRouter);
+app.use(jadwalRouter);
 
 app.use(returnError);
 app.listen(5000, () => {

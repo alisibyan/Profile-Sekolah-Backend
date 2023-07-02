@@ -9,12 +9,11 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   username String
   password String
-  siswa    Siswa?  @relation(fields: [siswaId], references: [id])
   role     Role
-  siswaId  String? @db.ObjectId
+  Siswa    Siswa?
 }
 
 model Guru {
@@ -31,7 +30,8 @@ model Siswa {
   kelas   Kelas   @relation(fields: [kelasId], references: [id])
   Nilai   Nilai[]
   kelasId String  @db.ObjectId
-  User    User[]
+  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String  @unique @db.ObjectId
 }
 
 enum Role {
@@ -48,16 +48,21 @@ model Berita {
 }
 
 model Kelas {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   kelas     String
-  waliKelas Guru    @relation(fields: [guruId], references: [id])
-  guruId    String  @db.ObjectId
+  waliKelas Guru     @relation(fields: [guruId], references: [id])
+  guruId    String   @db.ObjectId
   Siswa     Siswa[]
+  Jadwal    Jadwal[]
 }
 
 model Nilai {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  nilai       Int
+  nilaiUh1    Int?
+  nilaiUh2    Int?
+  nilaiUh3    Int?
+  nilaiUts    Int?
+  nilaiUas    Int?
   siswa       Siswa     @relation(fields: [siswaId], references: [id])
   siswaId     String    @db.ObjectId
   pelajaran   Pelajaran @relation(fields: [pelajaranId], references: [id])
@@ -65,9 +70,20 @@ model Nilai {
 }
 
 model Pelajaran {
-  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
   nama   String
-  guru   Guru    @relation(fields: [guruId], references: [id])
-  guruId String  @db.ObjectId
+  guru   Guru     @relation(fields: [guruId], references: [id])
+  guruId String   @db.ObjectId
   Nilai  Nilai[]
+  Jadwal Jadwal[]
+}
+
+model Jadwal {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  hari         String
+  jamPelajaran Int
+  pelajaran    Pelajaran @relation(fields: [pelajaranId], references: [id])
+  pelajaranId  String    @db.ObjectId
+  kelas        Kelas     @relation(fields: [kelasId], references: [id])
+  kelasId      String    @db.ObjectId
 }

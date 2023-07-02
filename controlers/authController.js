@@ -6,7 +6,16 @@ const jwt = require("jsonwebtoken");
 const login = async (req, res) => {
   const { username, password } = req.body;
   try {
-    const getUser = await prisma.user.findFirst({ where: { username } });
+    const getUser = await prisma.user.findFirst({
+      where: { username },
+      select: {
+        Siswa: { select: { id: true, kelas: { select: { id: true } } } },
+        password: true,
+        id: true,
+        username: true,
+        role: true,
+      },
+    });
     if (!getUser) return res.status(404).json({ message: "user not found" });
 
     const match = await argon2.verify(getUser.password, password);
@@ -20,9 +29,12 @@ const login = async (req, res) => {
         id: getUser.id,
         username: getUser.username,
         role: getUser.role,
+        siwaId: getUser.Siswa?.id,
+        kelas: getUser.Siswa?.kelas?.id,
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(404).json({ message: error.message });
   }
 };

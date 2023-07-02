@@ -3,14 +3,16 @@ const argon = require("argon2");
 const prisma = new PrismaClient();
 
 const getAllUser = (req, res, next) => {
+  const { username } = req.query;
+
   prisma.user
     .findMany({
       select: {
         id: true,
         role: true,
         username: true,
-        siswa: true,
       },
+      where: { username: { contains: username } },
     })
     .then((users) => {
       res.status(200).json(users);
@@ -29,7 +31,6 @@ const getUserById = (req, res, next) => {
         id: true,
         role: true,
         username: true,
-        siswa: true,
       },
       where: {
         idUser: id,
@@ -44,7 +45,7 @@ const getUserById = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { username, password, confirmPassword, role, siswa } = req.body;
+  const { username, password, confirmPassword, role } = req.body;
 
   if (password !== confirmPassword) {
     return res.status(500).json({ message: "Password not match" });
@@ -59,7 +60,6 @@ const createUser = (req, res, next) => {
             username: username,
             password: hashed,
             role,
-            siswa: { connect: { id: siswa } },
           },
         })
         .then(() => {
@@ -72,6 +72,28 @@ const createUser = (req, res, next) => {
     .catch((error) => {
       next(error);
     });
+};
+
+const createUserFromSiswa = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const siswa = await prisma.siswa.findUnique({ where: { id } });
+
+    const hashPassword = await argon.hash(siswa.nisn);
+    await prisma.user.create({
+      data: {
+        username: siswa.nisn,
+        password: hashPassword,
+        role: "USER",
+        siswaId: id,
+      },
+    });
+
+    res.status(201).json({ message: "data created" });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const updateUser = (req, res, next) => {
@@ -98,6 +120,7 @@ const updateUser = (req, res, next) => {
         });
     })
     .catch((error) => {
+      console.log(error);
       next(error);
     });
 };
@@ -120,4 +143,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  createUserFromSiswa,
 };

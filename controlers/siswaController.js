@@ -1,7 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const argon = require("argon2");
 
 const getAllSiswa = (req, res, next) => {
+  const { nama } = req.query;
+
   prisma.siswa
     .findMany({
       select: {
@@ -10,6 +13,7 @@ const getAllSiswa = (req, res, next) => {
         nisn: true,
         kelas: { select: { kelas: true } },
       },
+      where: { nama: { contains: nama } },
     })
     .then((data) => {
       res.status(200).json(data);
@@ -62,20 +66,23 @@ const getSiswaByKelas = (req, res, next) => {
 
 const createSiswa = (req, res, next) => {
   const { nama, nisn, kelasId } = req.body;
-  prisma.siswa
-    .create({
-      data: {
-        nama,
-        nisn,
-        kelasId,
-      },
-    })
-    .then(() => {
-      res.status(201).json({ message: "create success" });
-    })
-    .catch((error) => {
-      next(error);
-    });
+  argon.hash(nisn).then((hashed) => {
+    prisma.siswa
+      .create({
+        data: {
+          nama,
+          nisn,
+          kelas: { connect: { id: kelasId } },
+          User: { create: { username: nisn, password: hashed, role: "USER" } },
+        },
+      })
+      .then(() => {
+        res.status(201).json({ message: "create success" });
+      })
+      .catch((error) => {
+        next(error);
+      });
+  });
 };
 
 const updateSiswa = (req, res, next) => {
@@ -96,8 +103,15 @@ const deleteSiswa = (req, res, next) => {
   const { id } = req.params;
   prisma.siswa
     .delete({ where: { id } })
-    .then(() => {
-      res.status(200).json({ message: "delete success" });
+    .then((data) => {
+      prisma.user
+        .delete({ where: { id: data.userId } })
+        .then(() => {
+          res.status(200).json({ message: "delete success" });
+        })
+        .catch((error) => {
+          next(error);
+        });
     })
     .catch((error) => {
       next(error);

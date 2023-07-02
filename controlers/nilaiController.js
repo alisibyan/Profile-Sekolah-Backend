@@ -2,7 +2,24 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const createNilai = async (req, res, next) => {
-  const { nilai, siswa, pelajaran } = req.body;
+  const { siswa, pelajaran, nilaiUh1, nilaiUh2, nilaiUh3, nilaiUts, nilaiUas } =
+    req.body;
+
+  const dataNilai = [
+    { name: "nilaiUh1", nilai: nilaiUh1 },
+    { name: "nilaiUh2", nilai: nilaiUh2 },
+    { name: "nilaiUh3", nilai: nilaiUh3 },
+    { name: "nilaiUts", nilai: nilaiUts },
+    { name: "nilaiUas", nilai: nilaiUas },
+  ];
+
+  const formattedObject = {};
+
+  dataNilai
+    .filter((nilai) => nilai.nilai)
+    .forEach((item) => {
+      formattedObject[item.name] = Number(item.nilai);
+    });
 
   try {
     const findNilai = await prisma.nilai.findFirst({
@@ -12,7 +29,7 @@ const createNilai = async (req, res, next) => {
     if (!findNilai) {
       await prisma.nilai.create({
         data: {
-          nilai: Number(nilai),
+          ...formattedObject,
           pelajaran: { connect: { id: pelajaran } },
           siswa: { connect: { id: siswa } },
         },
@@ -22,7 +39,7 @@ const createNilai = async (req, res, next) => {
       await prisma.nilai.update({
         where: { id: findNilai.id },
         data: {
-          nilai: Number(nilai),
+          ...formattedObject,
           pelajaran: { connect: { id: pelajaran } },
           siswa: { connect: { id: siswa } },
         },
@@ -30,6 +47,7 @@ const createNilai = async (req, res, next) => {
       res.status(201).json({ message: "create success" });
     }
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
@@ -59,7 +77,15 @@ const getUserNilai = async (req, res, next) => {
   try {
     const data = await prisma.nilai.findMany({
       where: { siswaId: id },
-      select: { id: true, pelajaran: { select: { nama: true } }, nilai: true },
+      select: {
+        id: true,
+        pelajaran: { select: { nama: true } },
+        nilaiUas: true,
+        nilaiUh1: true,
+        nilaiUh2: true,
+        nilaiUh3: true,
+        nilaiUts: true,
+      },
     });
     res.status(200).json(data);
   } catch (error) {
